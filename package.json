@@ -1,0 +1,30 @@
+{
+  "name": "Employee_Tracker",
+  "version": "1.0.0",
+  "description": "A command-line application to manage a company's employee database. This application uses Node.js, Inquirer, and MySQL.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "dotenv": "^10.0.0",
+    "inquirer": "^8.1.2",
+    "mysql2": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rajnidua/Employee_Tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rajnidua/Employee_Tracker/issues"
+  },
+  "homepage": "https://github.com/rajnidua/Employee_Tracker#readme"
+}
