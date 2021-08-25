@@ -1,7 +1,23 @@
 const inquirer = require('inquirer');
+const Department = require('./lib/department.js');
+require('dotenv').config();
+
+
+// get the client
+const mysql = require('mysql2');
+
+// create the connection to database
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  password : process.env.DB_PASSWORD,
+  
+  
+});
 
 const promptUser = async() => {
-    const userRequest = inquirer.prompt([
+    const userRequest = await inquirer.prompt([
         {
             type: 'list',
     message: 'What would you like to do',
@@ -42,9 +58,20 @@ const processUserRequest = async(userRequest) => {
         console.log("It says Update Employee Role" + userRequest);
         break;
 
-        case "View All Departments" : 
+        case "View All Departments" : {
         console.log("It says View All Departments" + userRequest);
+        const department = await new Department(8,"hhhh");
+        department.viewDepartments();
+        console.log("bla bls");
+        connection.query(
+            `SELECT * FROM department`,
+            function(err, results, fields) {
+              console.log(results); // results contains rows returned by server
+              console.log(fields); // fields contains extra meta data about results, if available
+            }
+          );
         break;
+        }
 
         case "Add Department" : 
         console.log("It says Add Department" + userRequest);
@@ -60,10 +87,10 @@ const processUserRequest = async(userRequest) => {
 
 const init = async() => {
     promptUser()
-    .then((userRequest) =>{
-        console.log("fvdf"+userRequest);
-        processUserRequest(userRequest);
-    })
+    .then((userRequest) =>
+        //console.log("fvdf"+userRequest);
+        processUserRequest(userRequest)
+    )
     .catch((error)=>{console.log(error)});
 }
 
