@@ -1,13 +1,19 @@
 const inquirer = require('inquirer');
 const Department = require('./lib/department.js');
+const Role = require('./lib/role.js');
 require('dotenv').config();
 const cTable = require('console.table');
-
+const nameArray = [];
 // get the client
+
 const mysql = require('mysql2');
+const { async } = require('rxjs');
 
 // create the connection to database
-const connection = mysql.createConnection({
+
+
+async function main(){
+const pool =  mysql.createPool({
   host: 'localhost',
   user: process.env.DB_USER,
   database: process.env.DB_NAME,
@@ -15,6 +21,12 @@ const connection = mysql.createConnection({
   
   
 });
+// now get a Promise wrapped instance of that pool
+return promisePool = pool.promise();
+// query database using promises
+} 
+
+//}
 
 const promptUser = async() => {
     const userRequest = await inquirer.prompt([
@@ -47,6 +59,29 @@ return newDepartmentName.name;
 }
 
 
+const promptAddRole = async(nameArray) =>{ const newRole =  await inquirer.prompt([
+    {
+        type: 'input',
+        name: 'title',
+        message: "Enter the role title that you want to add : ",
+      },
+      {
+        type: 'number',
+        name: 'salary',
+        message: "Enter the salary in that role : ",
+      },
+      {
+        type: 'list',
+message: 'Select the department where this role belongs',
+name: 'request',
+choices: nameArray
+    }
+]);
+console.log("my input is ::::: "+newRole.name);
+return newRole;
+}
+
+
 const processUserRequest = async(userRequest) => {
     switch(userRequest){
         case "View All Employees" : 
@@ -62,17 +97,41 @@ const processUserRequest = async(userRequest) => {
         break;
 
         case "View All Roles" : 
-        console.log("It says Update Employee Role" + userRequest);
+        console.log("It says view Employee Roles" + userRequest);
+        await main();
+        const role = await new Role();
+        role.viewAllRoles(promisePool);
+        console.log("bla role");
         break;
 
         case "Add Role" : 
-        console.log("It says Update Employee Role" + userRequest);
+        try{
+        console.log("It says add Employee Role" + userRequest);
+        //console.log("Connecton----"+connection.host);
+        
+            await main();
+             const [rows,fields] = await promisePool.query(
+                `SELECT name FROM department`); 
+                  
+           console.log(rows);
+             
+            const newRole = await promptAddRole(rows);
+        
+        const role = await new Role(newRole.title,newRole.salary,newRole.request);
+            await role.addRole(promisePool);
+            
+        console.log("bla 2");
+        break;
+    }catch(err){
+        console.error(err);
+    }
         break;
 
         case "View All Departments" : {
         console.log("It says View All Departments" + userRequest);
+        await main();
         const department = await new Department();
-        department.viewDepartments(connection);
+        department.viewDepartments(promisePool);
         console.log("bla bls");
         break;
         }
@@ -81,11 +140,11 @@ const processUserRequest = async(userRequest) => {
         console.log("It says Add Department" + userRequest);
         
         try{
-           
+           await main();
             const newDepartmentName = await promptAddDepartment();
         
         const department = await new Department(newDepartmentName);
-            await department.AddDepartment(connection);
+            await department.AddDepartment(promisePool);
             
         console.log("bla 2");
         break;
@@ -102,11 +161,12 @@ const processUserRequest = async(userRequest) => {
 
 
 const init = async() => {
+    //const promisePool = await promisePool.main;
     promptUser()
     .then((userRequest) =>
        
         processUserRequest(userRequest)
-    )
+    ) 
     .catch((error)=>{console.log(error)});
 }
 
