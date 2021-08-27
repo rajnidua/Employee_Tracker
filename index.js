@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
 const Department = require('./lib/department.js');
 require('dotenv').config();
-
+const cTable = require('console.table');
 
 // get the client
 const mysql = require('mysql2');
@@ -35,6 +35,17 @@ const promptUser = async() => {
     return userRequest.request;
 }
 
+const promptAddDepartment = async() =>{ const newDepartmentName =  await inquirer.prompt([
+    {
+        type: 'input',
+        name: 'name',
+        message: "Enter the department name that you want to add : ",
+      }
+]);
+console.log("my input is ::::: "+newDepartmentName.name);
+return newDepartmentName.name;
+}
+
 
 const processUserRequest = async(userRequest) => {
     switch(userRequest){
@@ -60,23 +71,28 @@ const processUserRequest = async(userRequest) => {
 
         case "View All Departments" : {
         console.log("It says View All Departments" + userRequest);
-        const department = await new Department(8,"hhhh");
-        department.viewDepartments();
+        const department = await new Department();
+        department.viewDepartments(connection);
         console.log("bla bls");
-        connection.query(
-            `SELECT * FROM department`,
-            function(err, results, fields) {
-              console.log(results); // results contains rows returned by server
-              console.log(fields); // fields contains extra meta data about results, if available
-            }
-          );
         break;
         }
 
         case "Add Department" : 
         console.log("It says Add Department" + userRequest);
+        
+        try{
+           
+            const newDepartmentName = await promptAddDepartment();
+        
+        const department = await new Department(newDepartmentName);
+            await department.AddDepartment(connection);
+            
+        console.log("bla 2");
         break;
-
+    }catch(err){
+        console.error(err);
+    }
+  
         default : console.log("The request didn't match with any of the choices"); 
 
     }
@@ -88,7 +104,7 @@ const processUserRequest = async(userRequest) => {
 const init = async() => {
     promptUser()
     .then((userRequest) =>
-        //console.log("fvdf"+userRequest);
+       
         processUserRequest(userRequest)
     )
     .catch((error)=>{console.log(error)});
