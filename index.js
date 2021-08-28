@@ -114,6 +114,7 @@ const processUserRequest = async(userRequest) => {
                 `SELECT name FROM department`); 
                   
            console.log(rows);
+           
              
             const newRole = await promptAddRole(rows);
         
