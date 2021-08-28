@@ -12,6 +12,7 @@ var myRoleTitleArray =[];
 
 const mysql = require('mysql2');
 const { async } = require('rxjs');
+const { title } = require('process');
 
 // create the connection to database
 
@@ -115,19 +116,38 @@ return newEmployee;
 }
 
 const promptEmployeeRoles = async(roleTitleArray) =>{ 
+    const myTitleArray =  roleTitleArray.map((item) => {return item.title});
+  
+    console.log(myTitleArray);
     const employeeRole =  await inquirer.prompt([
     
        {
         type: 'list',
 message: 'The following roles exist in the department that this employee belongs to, please assign a role to the employee:',
 name: 'request',
-choices: roleTitleArray,
+choices: myTitleArray
     }
 ]); 
 console.log("my input is ::::: "+employeeRole.request);
 return employeeRole;
 
 }
+
+
+const getRolesByDept=async(deptName) =>{
+    try{
+    const [roleTitleRow,roleTitleFields] = await promisePool.query(
+        `SELECT title FROM role,department where role.department_id = department.id AND department.name = "${deptName}" `); 
+         return roleTitleRow;
+    
+          
+    
+    }catch(err){
+        console.error(err);
+    }
+}
+
+
 
 
 const userSelection = async(userRequest) =>{
@@ -155,23 +175,15 @@ const userSelection = async(userRequest) =>{
                 console.log("It says add a new Employee" + userRequest);
                 await main();
                 const [deptRow,deptFields] = await promisePool.query(
-                `SELECT name FROM department`); 
-                
+                `SELECT distinct name FROM department d where exists (select 1 from role r where r.department_id = d.id )`); 
+                 
                  //console.log(deptRow[0].id,deptRow[0].name);
                 const newEmployee = await promptNewEmployee(deptRow);
                 console.log(newEmployee.request);
 
-                const [roleTitleRow,roleTitleFields] = await promisePool.query(
-                    `SELECT title FROM role,department where role.department_id = department.id AND department.name = "${newEmployee.request}" `); 
-                    console.log("The role title for this department is" +roleTitleRow[0].title);
-                    console.table(roleTitleRow);
-                
-                      
-                    const rolesForDept = await promptEmployeeRoles(roleTitleRow); 
-                    console.log("******* "+rolesForDept.request);
-                /* const newRole = await promptAddEmployee(rows);
-                const role = await new Role(newRole.title,newRole.salary,newRole.request);
-                await role.addRole(promisePool); */
+                const roleTitleRow = await getRolesByDept(newEmployee.request);
+                const rolesForDept = await promptEmployeeRoles(roleTitleRow); 
+                console.log("******* "+rolesForDept.request);
                 console.log("bla 2");
                 await init();
                 break;
@@ -194,6 +206,7 @@ const userSelection = async(userRequest) =>{
                 await main();
                 const role = await new Role();
                 await role.viewAllRoles(promisePool);
+                    
                 console.log("bla role");
                 await init();
                 break;
