@@ -5,6 +5,9 @@ const Employee = require('./lib/employee.js');
 require('dotenv').config();
 const cTable = require('console.table');
 const nameArray = [];
+const deptArray=[];
+var myRoleTitleArray =[];
+
 // get the client
 
 const mysql = require('mysql2');
@@ -61,8 +64,10 @@ return newDepartmentName.name;
 }
 
 
-const promptAddRole = async(nameArray) =>{ const newRole =  await inquirer.prompt([
-    {
+const promptAddRole = async(nameArray) =>{ 
+    
+    const newRole =  await inquirer.prompt([
+     {
         type: 'input',
         name: 'title',
         message: "Enter the role title that you want to add : ",
@@ -74,13 +79,54 @@ const promptAddRole = async(nameArray) =>{ const newRole =  await inquirer.promp
       },
       {
         type: 'list',
-message: 'Select the department where this role belongs',
+message: 'Select the department where this employee belongs',
 name: 'request',
 choices: nameArray
     }
 ]);
 console.log("my input is ::::: "+newRole.name);
-return newRole;
+return newRole; 
+}
+
+
+
+const promptNewEmployee = async(deptArray) =>{ 
+   
+    const newEmployee =  await inquirer.prompt([
+    {
+        type: 'input',
+        name: 'firstName',
+        message: "Enter the first name that you want to add : ",
+      },
+      {
+        type: 'input',
+        name: 'lastName',
+        message: "Enter the last name : ",
+      },
+      {
+        type: 'list',
+message: 'Select the department this employee belongs to',
+name: 'request',
+choices: deptArray
+    }
+]);
+console.log("my input is ::::: "+newEmployee.request);
+return newEmployee; 
+}
+
+const promptEmployeeRoles = async(roleTitleArray) =>{ 
+    const employeeRole =  await inquirer.prompt([
+    
+       {
+        type: 'list',
+message: 'The following roles exist in the department that this employee belongs to, please assign a role to the employee:',
+name: 'request',
+choices: roleTitleArray,
+    }
+]); 
+console.log("my input is ::::: "+employeeRole.request);
+return employeeRole;
+
 }
 
 
@@ -105,31 +151,34 @@ const userSelection = async(userRequest) =>{
 
         case "Add Employee" : 
         {
-            /* try{
+             try{
                 console.log("It says add a new Employee" + userRequest);
                 await main();
-                const [deptNameRow,deptNameFields] = await promisePool.query(
+                const [deptRow,deptFields] = await promisePool.query(
                 `SELECT name FROM department`); 
-                console.log(deptNameRow);
+                
+                 //console.log(deptRow[0].id,deptRow[0].name);
+                const newEmployee = await promptNewEmployee(deptRow);
+                console.log(newEmployee.request);
 
-                const [deptIdRow,deptIdFields] = await promisePool.query(
-                    `SELECT id FROM department where name = "${deptNameRow.request}"`); 
-                    console.log(roleIdRow);
-
-                const [roleRow,roleFields] = await promisePool.query(
-                    `SELECT title FROM role where department_id = `); 
-                    console.log(roleRow);
-
-                const newRole = await promptAddEmployee(rows);
+                const [roleTitleRow,roleTitleFields] = await promisePool.query(
+                    `SELECT title FROM role,department where role.department_id = department.id AND department.name = "${newEmployee.request}" `); 
+                    console.log("The role title for this department is" +roleTitleRow[0].title);
+                    console.table(roleTitleRow);
+                
+                      
+                    const rolesForDept = await promptEmployeeRoles(roleTitleRow); 
+                    console.log("******* "+rolesForDept.request);
+                /* const newRole = await promptAddEmployee(rows);
                 const role = await new Role(newRole.title,newRole.salary,newRole.request);
-                await role.addRole(promisePool);
+                await role.addRole(promisePool); */
                 console.log("bla 2");
                 await init();
                 break;
             }catch(err)
             {
                 console.error(err);
-            } */
+            } 
            // break;
         }
 
