@@ -13,6 +13,8 @@ var myRoleTitleArray =[];
 const mysql = require('mysql2');
 const { async } = require('rxjs');
 const { title } = require('process');
+const { UnsubscriptionError } = require('rxjs');
+const { write } = require('fs');
 
 // create the connection to database
 
@@ -32,6 +34,28 @@ return promisePool = pool.promise();
 } 
 
 //}
+const getKeyByValue = async(obj, value) => {
+   // value = "'" + value + "'";
+   for (let i=0;i<obj.length;i++) {
+    console.log(obj[i].manager_name + ',' + obj[i].manager_id);
+    console.log(value);
+    if (obj[i].manager_name == value){
+        console.log ("match found");
+        return obj[i].manager_id;
+    }
+   } 
+   /*
+   obj.forEach(element => {
+        console.log(element.manager_name + ',' + element.manager_id);
+        console.log(value);
+        if (element.manager_name == value){
+            console.log ("match found");
+            return element.manager_id;
+        }
+        */
+    }
+        
+  
 
 const promptUser = async() => {
     const userRequest = await inquirer.prompt([
@@ -67,6 +91,7 @@ return newDepartmentName.name;
 
 const promptAddRole = async(nameArray) =>{ 
     
+   
     const newRole =  await inquirer.prompt([
      {
         type: 'input',
@@ -79,11 +104,18 @@ const promptAddRole = async(nameArray) =>{
         message: "Enter the salary in that role : ",
       },
       {
+        type: 'confirm',
+message: 'Does this role has any direct reportees : ',
+name: 'directReportee',
+//choices: ["true","false"],
+    },
+      {
         type: 'list',
 message: 'Select the department where this employee belongs',
 name: 'request',
 choices: nameArray
     }
+    
 ]);
 console.log("my input is ::::: "+newRole.name);
 return newRole; 
@@ -107,11 +139,11 @@ const promptNewEmployee = async(deptArray) =>{
       {
         type: 'list',
 message: 'Select the department this employee belongs to',
-name: 'request',
+name: 'department',
 choices: deptArray
     }
 ]);
-console.log("my input is ::::: "+newEmployee.request);
+console.log("my input is ::::: "+newEmployee.department);
 return newEmployee; 
 }
 
@@ -124,12 +156,33 @@ const promptEmployeeRoles = async(roleTitleArray) =>{
        {
         type: 'list',
 message: 'The following roles exist in the department that this employee belongs to, please assign a role to the employee:',
-name: 'request',
+name: 'emprole',
 choices: myTitleArray
     }
 ]); 
-console.log("my input is ::::: "+employeeRole.request);
+console.log("my input is ::::: "+employeeRole.emprole);
 return employeeRole;
+
+}
+
+const promptEmployeeManager = async(mgrArray) =>{ 
+      
+     
+    //console.log(mgrArray); 
+
+    const empMgrArr = mgrArray.map((item) => {return  item.manager_name + '-' + item.manager_id});
+     //console.log(empMgrArr);
+    const employeeMgr =  await inquirer.prompt([
+    
+       {
+        type: 'list',
+message: 'Please select the manager from the list below:',
+name: 'empMgr',
+choices:   empMgrArr
+    }
+]); 
+console.log("my input is ::::: "+employeeMgr.empMgr);
+return employeeMgr;
 
 }
 
@@ -145,6 +198,24 @@ const getRolesByDept=async(deptName) =>{
     }catch(err){
         console.error(err);
     }
+}
+
+const getManagerDetails = async(deptName) => {
+    try{
+        const [rmanagerRow,managerFields] = await promisePool.query(
+            //`SELECT title FROM role,department where role.department_id = department.id AND department.name = "${deptName}" `); 
+            `SELECT  CONCAT(e.first_name, " ",e.last_name) manager_name, e.id as manager_id  FROM employee e 
+            JOIN department d ON e.department_id = d.id AND d.name = "${deptName}" 
+            LEFT JOIN role r ON e.role_id=r.id and r.direct_reportee = true
+            union 
+            select  "NONE" as manager_name,0 as manager_id from employee`);
+             return rmanagerRow;
+        
+              
+        
+        }catch(err){
+            console.error(err);
+        }
 }
 
 
@@ -179,17 +250,37 @@ const userSelection = async(userRequest) =>{
                  
                  //console.log(deptRow[0].id,deptRow[0].name);
                 const newEmployee = await promptNewEmployee(deptRow);
-                console.log(newEmployee.request);
+                console.log(newEmployee.department);
 
-                const roleTitleRow = await getRolesByDept(newEmployee.request);
+
+                // get all the roles belonging to a department
+                const roleTitleRow = await getRolesByDept(newEmployee.department);
+
+                // selected role by the user
                 const rolesForDept = await promptEmployeeRoles(roleTitleRow); 
-                console.log("******* "+rolesForDept.request);
-                console.log("bla 2");
+                console.log("******* "+rolesForDept.emprole);
+
+                 // get the employee list from department who have direct_reportee set to true based on their roles
+                const managerRow = await getManagerDetails(newEmployee.department);
+                console.log(managerRow);
+                // select manager by the user
+                const manager = await promptEmployeeManager(managerRow);
+                console.log(manager.empMgr);
+
+              //  const managerID = await getKeyByValue(managerRow,manager.empMgr);  
+               // console.log("manager id is " + managerID);
+
+               // console.log(manager_id);
+
+                // add the new employee record
+                const emp =   new Employee(newEmployee.firstName,newEmployee.lastName,rolesForDept.emprole,newEmployee.department,manager.empMgr);
+                await emp.addEmployee(promisePool);
+                console.log("Employee record added successfully");
                 await init();
                 break;
             }catch(err)
             {
-                console.error(err);
+                console.error("Error adding employee record:" + err);
             } 
            // break;
         }
@@ -225,7 +316,7 @@ const userSelection = async(userRequest) =>{
                 `SELECT name FROM department`); 
                 console.log(rows);
                 const newRole = await promptAddRole(rows);
-                const role = await new Role(newRole.title,newRole.salary,newRole.request);
+                const role = await new Role(newRole.title,newRole.salary,newRole.request,newRole.directReportee);
                 await role.addRole(promisePool);
                 console.log("bla 2");
                 await init();

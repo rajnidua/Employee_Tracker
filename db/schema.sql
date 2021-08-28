@@ -18,7 +18,8 @@ CREATE TABLE role (
   department_id INT,
   FOREIGN KEY (department_id)
   REFERENCES department(id)
-  ON DELETE SET NULL
+  ON DELETE SET NULL,
+  direct_reportee BOOLEAN DEFAULT FALSE
 );
 
 DROP TABLE IF EXISTS employee;
@@ -34,6 +35,8 @@ CREATE TABLE employee (
   REFERENCES department(id),
   manager_id INT
   REFERENCES employee(id)
+  
+
 ); 
 
 
