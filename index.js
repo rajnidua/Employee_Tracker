@@ -383,11 +383,7 @@ const processUserRequest = async(userRequest) => {
 
 
 const init = async() => {
-    //console.log("I am in INIT");
-    /* const selectionShow = new selection;
-    await selectionShow.show(); */
-   // await myFunction();
-    //.then((data)=>console.log(data))
+    
      promptUser()
       .then((userRequest) =>
          processUserRequest(userRequest)
@@ -396,23 +392,5 @@ const init = async() => {
   }
   
 
-/* const init=async()=>{
-const view = await figlet('Hello World!!', function(err, data) {
-   
-    if (err) {
-        console.log('Something went wrong...');
-        console.dir(err);
-        return;
-    }
-    console.log(data);
-   
-
-})
-//promptInit();
-//.then(()=>promptInit())
-} */
-
-
 
 init();
-//.then(()=>promptInit());
