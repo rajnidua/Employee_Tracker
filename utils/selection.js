@@ -1,4 +1,5 @@
 const inquirer = require('inquirer');
+var figlet = require('figlet');
 class selection{
 //prompt for new employee
   promptNewEmployee = async(deptArray) =>{ 
@@ -123,6 +124,60 @@ return newRole;
 //console.log("my input is ::::: "+newDepartmentName.name);
     return newDepartmentName.name;
 }
+
+
+promptMgrList= async(usrMgrArr)=>{
+    const usrMgrLst =  usrMgrArr.map((item) => {
+    return {
+            name: item.managerName,
+            value: item.managerId
+        }       
+    });
+  //console.log(myEmpArray);
+    const mgrSelected =  await inquirer.prompt([
+    {
+        type: 'list',
+        message: 'Please select the Manager record from the list below to view employee:',
+        name: 'mgrSel',
+        choices:   usrMgrLst
+     }
+ ]); 
+ //console.log("user selection is :" + empSelected.empSel);
+ return mgrSelected.mgrSel;
+}
+
+promptDeptList= async(usrDeptArr)=>{
+    const usrDeptLst =  usrDeptArr.map((item) => {
+    return {
+            name: item.departmentName,
+            value: item.departmentId
+        }       
+    });
+  //console.log(myEmpArray);
+    const deptSelected =  await inquirer.prompt([
+    {
+        type: 'list',
+        message: 'Please select the Department record from the list below to view employee:',
+        name: 'deptSel',
+        choices:   usrDeptLst
+     }
+ ]); 
+ //console.log("user selection is :" + empSelected.empSel);
+ return deptSelected.deptSel;
+}
+
+
+
+
+show = async() => new Promise((resolve, reject) => {
+    figlet('Employee Tracking System', (err, data) => {
+     if (err) {
+      return reject(err);
+     }
+   
+     return resolve(console.log(data));
+    });
+   })
 
 
 }

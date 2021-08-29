@@ -6,6 +6,7 @@ const util = require('util');
 const selection = require("./utils/selection.js");
 require('dotenv').config();
 const cTable = require('console.table');
+var figlet = require('figlet');
 
 // get the client
 
@@ -14,6 +15,7 @@ const { async, throwError } = require('rxjs');
 const { title } = require('process');
 const { UnsubscriptionError } = require('rxjs');
 const { write } = require('fs');
+const { clear, exception } = require('console');
 
 // create the connection to database
 async function main(){
@@ -54,6 +56,8 @@ const promptUser = async() => {
                 "Add Role",
                 "View All Departments",
                 "Add Department",
+                "View Employees By Manager",
+                "View Employees By Department",
                 "EXIT"
             ]
         }
@@ -97,7 +101,7 @@ const userSelection = async(userRequest) =>{
 
                 // get all the roles belonging to a department
                 const role = new Role();
-                const roleTitleRow = await role.getRolesByDept(newEmployee.department);
+                const roleTitleRow = await role.getRolesByDept(promisePool,newEmployee.department);
                 //const roleTitleRow = await getRolesByDept(newEmployee.department);
                 console.table(roleTitleRow);
                     console.log("The value of role title row is :"+roleTitleRow);
@@ -109,7 +113,7 @@ const userSelection = async(userRequest) =>{
 
                  // get the employee list from department who have direct_reportee set to true based on their roles
                 const empGetManager = new Employee();
-                 const managerRow = await empGetManager.getManagerDetails(newEmployee.department);
+                 const managerRow = await empGetManager.getManagerDetails(promisePool,newEmployee.department);
                 console.log(managerRow);
                 // select manager by the user
                 const manager = await promptEmployeeManager(managerRow);
@@ -149,7 +153,7 @@ const userSelection = async(userRequest) =>{
                  
                 // get employee detail by employee id selected by user
                 const empById = new Employee;
-                const empDet = await empById.getEmpById(employeeList.empSel);
+                const empDet = await empById.getEmpById(promisePool,employeeList.empSel);
                 console.log("Employee details are" + empDet);
                 console.table(empDet);  
                  const empDetails = Object.values(empDet);
@@ -251,6 +255,63 @@ const userSelection = async(userRequest) =>{
                 console.error(err);
             }
         }
+
+        case "View Employees By Manager" : 
+        {
+        try{
+            await main();
+           const empMgrList = await new Employee();
+           const usrMgrList = await empMgrList.getManagersList(promisePool);
+           const selectionMgrList = new selection;
+           const usrMgrSel = await selectionMgrList.promptMgrList(usrMgrList);
+           
+         
+           const empByMgrRecs = await empMgrList.getEmpByMgrId(promisePool,usrMgrSel);
+           console.log("Selected manager's Id is: " + usrMgrSel); 
+           console.log("The employees who report to this manager are : ")
+
+           if (empByMgrRecs.length != 0) {
+                console.table(empByMgrRecs);
+           } else {
+               console.log("No Employee reports to selected manager");
+           }
+           
+           await init();
+                break;
+        }catch(err){
+            console.error(err);
+        }
+    }
+
+    case "View Employees By Department" : 
+    {
+    try{
+        await main();
+       const empDeptList = await new Department();
+       const usrDeptList = await empDeptList.getDepartmentList(promisePool);
+       console.table(usrDeptList);
+        const selectionDeptList = new selection;
+       const usrDeptSel = await selectionDeptList.promptDeptList(usrDeptList);
+       console.log("Selected department's Id is: " + usrDeptSel);  
+    
+       const empByDeptRecs = await empDeptList.getEmpByDeptId(promisePool,usrDeptSel);
+       if (empByDeptRecs.length != 0) {
+       console.table(empByDeptRecs);
+       } else {console.log("No employee records found for the selected department");}
+
+      /* const empByMgrRecs = await empMgrList.getEmpByMgrId(promisePool,usrMgrSel);
+       console.log("Selected manager's Id is: " + usrMgrSel); 
+       console.log("The employees who report to this manager are : ")
+      console.table(empByMgrRecs); */
+
+       
+       await init();
+            break;
+    }catch(err){
+        console.error(err);
+    }
+}
+
         case "EXIT": {
             console.log("Exiting from application");
             process.exit();
@@ -271,14 +332,55 @@ const processUserRequest = async(userRequest) => {
 }
 
 
+/* const show = async() => new Promise((resolve, reject) => {
+    figlet('Employee Tracking System', (err, data) => {
+     if (err) {
+      return reject(err);
+     }
+   
+     return resolve(console.log(data));
+    });
+   }) */
+/* const myFunction=async()=>{
+    promptUser()
+      .then((userRequest) =>
+         processUserRequest(userRequest)
+      ) 
+      .catch((error)=>{console.log(error)});
+} */
 
 
 const init = async() => {
-   promptUser()
-    .then((userRequest) =>
-       processUserRequest(userRequest)
-    ) 
-    .catch((error)=>{console.log(error)});
-}
+    //console.log("I am in INIT");
+    /* const selectionShow = new selection;
+    await selectionShow.show(); */
+   // await myFunction();
+    //.then((data)=>console.log(data))
+     promptUser()
+      .then((userRequest) =>
+         processUserRequest(userRequest)
+      ) 
+      .catch((error)=>{console.log(error)}); 
+  }
+  
+
+/* const init=async()=>{
+const view = await figlet('Hello World!!', function(err, data) {
+   
+    if (err) {
+        console.log('Something went wrong...');
+        console.dir(err);
+        return;
+    }
+    console.log(data);
+   
+
+})
+//promptInit();
+//.then(()=>promptInit())
+} */
+
+
 
 init();
+//.then(()=>promptInit());
