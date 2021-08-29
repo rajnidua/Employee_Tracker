@@ -11,7 +11,7 @@ var myRoleTitleArray =[];
 // get the client
 
 const mysql = require('mysql2');
-const { async } = require('rxjs');
+const { async, throwError } = require('rxjs');
 const { title } = require('process');
 const { UnsubscriptionError } = require('rxjs');
 const { write } = require('fs');
@@ -89,8 +89,14 @@ return newDepartmentName.name;
 }
 
 
-const promptAddRole = async(nameArray) =>{ 
-    
+const promptAddRole = async(deptArray) =>{ 
+    const deptList =  deptArray.map((item) => {
+        return {
+            name: item.deptName,
+            value: item.deptID
+        //value:item.employeeid
+        }       
+          });
    
     const newRole =  await inquirer.prompt([
      {
@@ -112,8 +118,8 @@ name: 'directReportee',
       {
         type: 'list',
 message: 'Select the department where this employee belongs',
-name: 'request',
-choices: nameArray
+name: 'dept',
+choices: deptList
     }
     
 ]);
@@ -124,6 +130,14 @@ return newRole;
 
 
 const promptNewEmployee = async(deptArray) =>{ 
+
+    const deptList =  deptArray.map((item) => {
+        return {
+            name: item.deptName,
+            value: item.deptID
+        //value:item.employeeid
+        }       
+          });
    
     const newEmployee =  await inquirer.prompt([
     {
@@ -140,7 +154,7 @@ const promptNewEmployee = async(deptArray) =>{
         type: 'list',
 message: 'Select the department this employee belongs to',
 name: 'department',
-choices: deptArray
+choices: deptList
     }
 ]);
 console.log("my input is ::::: "+newEmployee.department);
@@ -148,29 +162,43 @@ return newEmployee;
 }
 
 const promptEmployeeRoles = async(roleTitleArray) =>{ 
-    const myTitleArray =  roleTitleArray.map((item) => {return item.title});
+     
   
-    console.log(myTitleArray);
+    const roleList =  roleTitleArray.map((item) => {
+        return {
+            name: item.roleTitle,
+            value: item.roleID
+        
+        }       
+          });
+
+
+   console.log(roleList);
     const employeeRole =  await inquirer.prompt([
     
        {
         type: 'list',
 message: 'The following roles exist in the department that this employee belongs to, please assign a role to the employee:',
-name: 'emprole',
-choices: myTitleArray
+name: 'empRole',
+choices: roleList
     }
 ]); 
-console.log("my input is ::::: "+employeeRole.emprole);
-return employeeRole;
+ console.log("The vlaue inside prompt is : "+employeeRole.empRole+" The whole value is "+employeeRole);
+return employeeRole.empRole;
 
 }
 
 const promptEmployeeManager = async(mgrArray) =>{ 
       
-     
-    //console.log(mgrArray); 
-
-    const empMgrArr = mgrArray.map((item) => {return  item.manager_name + '-' + item.manager_id});
+    const empMgrList =  mgrArray.map((item) => {
+        return {
+            name: item.manager_name,
+            value: item.manager_id
+        //value:item.employeeid
+        }       
+          });
+    
+ 
      //console.log(empMgrArr);
     const employeeMgr =  await inquirer.prompt([
     
@@ -178,7 +206,7 @@ const promptEmployeeManager = async(mgrArray) =>{
         type: 'list',
 message: 'Please select the manager from the list below:',
 name: 'empMgr',
-choices:   empMgrArr
+choices:   empMgrList
     }
 ]); 
 console.log("my input is ::::: "+employeeMgr.empMgr);
@@ -187,11 +215,12 @@ return employeeMgr;
 }
 
 
-const getRolesByDept=async(deptName) =>{
+const getRolesByDept=async(deptID) =>{
     try{
     const [roleTitleRow,roleTitleFields] = await promisePool.query(
-        `SELECT title FROM role,department where role.department_id = department.id AND department.name = "${deptName}" `); 
-         return roleTitleRow;
+        `SELECT role.title as roleTitle, role.id as roleID FROM role where role.department_id =  ${deptID} `); 
+        console.table(roleTitleRow);
+        return roleTitleRow;
     
           
     
@@ -219,6 +248,59 @@ const getManagerDetails = async(deptName) => {
 }
 
 
+const promptEmployeeList= async(empList)=>{
+    
+    const myEmpArray =  empList.map((item) => {
+        return {
+            name: item.EmployeeName,
+            value: item.EmployeeID
+        //value:item.employeeid
+        }       
+          });
+  
+    console.log(myEmpArray);
+    const empSelected =  await inquirer.prompt([
+    
+        {
+         type: 'list',
+ message: 'Please select the Employee record from the list below to update:',
+ name: 'empSel',
+ choices:   myEmpArray
+     }
+ ]); 
+ console.log("user selection is :" + empSelected.empSel);
+ 
+ return empSelected;
+}
+
+
+const getEmpById= async(empID)=>{
+     
+ const [empSelData,empFields] = await promisePool.query(
+    `SELECT first_name as firstName, last_name as lastName, id as employeeID, department_id  as curEmpDept, role_id as curEmpRoleId, manager_id as curEmpMgrID    
+      FROM employee
+      where id = ${empID}`); 
+      //console.table(empSelData);
+  //console.log("The whole employee record is :" +empSelData);
+ return empSelData;
+}
+
+
+
+const promptDeptList= async(deptList)=>{
+    const myDeptArray =  deptList.map((item) => {return item.name});
+  
+    console.log(myDeptArray);
+    const deptSelected =  await inquirer.prompt([
+    
+        {
+         type: 'list',
+ message: 'Please select the manager from the list below:',
+ name: 'deptName',
+ choices:   myDeptArray
+     }
+ ]); return deptSelected.deptName;
+}
 
 
 const userSelection = async(userRequest) =>{
@@ -230,7 +312,7 @@ const userSelection = async(userRequest) =>{
                 await main();
                 const employee = await new Employee();
                 await employee.viewAllEmployees(promisePool);
-                console.log("bla role");
+               // console.log("bla role");
                 await init();
                 break;
             }
@@ -246,19 +328,21 @@ const userSelection = async(userRequest) =>{
                 console.log("It says add a new Employee" + userRequest);
                 await main();
                 const [deptRow,deptFields] = await promisePool.query(
-                `SELECT distinct name FROM department d where exists (select 1 from role r where r.department_id = d.id )`); 
+                `SELECT distinct name as deptName,id as deptID FROM department d where exists (select 1 from role r where r.department_id = d.id )`); 
                  
                  //console.log(deptRow[0].id,deptRow[0].name);
                 const newEmployee = await promptNewEmployee(deptRow);
-                console.log(newEmployee.department);
+                console.log("The value in new employee.department is :"+newEmployee.department);
 
 
                 // get all the roles belonging to a department
                 const roleTitleRow = await getRolesByDept(newEmployee.department);
-
+                console.table(roleTitleRow);
+                    console.log("The value of role title row is :"+roleTitleRow);
                 // selected role by the user
                 const rolesForDept = await promptEmployeeRoles(roleTitleRow); 
-                console.log("******* "+rolesForDept.emprole);
+                
+                console.log("******* "+rolesForDept);
 
                  // get the employee list from department who have direct_reportee set to true based on their roles
                 const managerRow = await getManagerDetails(newEmployee.department);
@@ -267,13 +351,9 @@ const userSelection = async(userRequest) =>{
                 const manager = await promptEmployeeManager(managerRow);
                 console.log(manager.empMgr);
 
-              //  const managerID = await getKeyByValue(managerRow,manager.empMgr);  
-               // console.log("manager id is " + managerID);
-
-               // console.log(manager_id);
 
                 // add the new employee record
-                const emp =   new Employee(newEmployee.firstName,newEmployee.lastName,rolesForDept.emprole,newEmployee.department,manager.empMgr);
+                const emp =   new Employee(newEmployee.firstName,newEmployee.lastName,rolesForDept,newEmployee.department,manager.empMgr);
                 await emp.addEmployee(promisePool);
                 console.log("Employee record added successfully");
                 await init();
@@ -286,9 +366,50 @@ const userSelection = async(userRequest) =>{
         }
 
         case "Update Employee Role" : 
-            console.log("It says Update Employee Role" + userRequest);
-            await init();
-            break;
+        {
+            try{
+               console.log("It says update an employee Role " + userRequest);
+               await main();
+                const [empRow,empFields] = await promisePool.query(
+                 `SELECT CONCAT (first_name ," ",last_name) as EmployeeName, id as EmployeeID FROM employee`); 
+                //`SELECT first_name ,last_name,id FROM employee`);
+                
+                 if (empRow.length == 0){console.log (
+                     "No Employee Records exist"); 
+                     return;}
+            
+                  // Prompt employee selection from user  (empSel) 
+                 const employeeList = await promptEmployeeList(empRow);
+                console.log("The employee name you want to change role is : "+employeeList);
+                 
+                // get employee detail by employee id selected by user
+                const empDet = await getEmpById(employeeList.empSel);
+                console.log("Employee details are" + empDet);
+                console.table(empDet);  
+                 const empDetails = Object.values(empDet);
+                console.log("curEmpDept" + empDetails[0].curEmpDept);
+               // get all the roles belonging to the selected employee department
+               const roleRecs = await getRolesByDept(empDetails[0].curEmpDept);
+
+               // selected updated role by the user
+               const rolesForDept = await promptEmployeeRoles(roleRecs); 
+               console.log("******* "+rolesForDept);
+ 
+            
+
+               // add the new employee record
+               const emp =   new Employee(empDetails[0].firstName,empDetails[0].lastName,rolesForDept,empDetails[0].curEmpDept,empDetails[0].curEmpMgrID);
+               await emp.updateEmployeeRole(promisePool,employeeList.empSel);
+               console.log("Employee record updated successfully");
+               await init();
+               break;
+           }catch(err)
+           {
+               console.error("Error adding employee record:" + err);
+           } 
+          // break;
+       }
+
 
         case "View All Roles" : 
         {
@@ -312,13 +433,13 @@ const userSelection = async(userRequest) =>{
             try{
                 console.log("It says add Employee Role" + userRequest);
                 await main();
-                const [rows,fields] = await promisePool.query(
-                `SELECT name FROM department`); 
-                console.log(rows);
-                const newRole = await promptAddRole(rows);
-                const role = await new Role(newRole.title,newRole.salary,newRole.request,newRole.directReportee);
+                const [deptRecs,fields] = await promisePool.query(
+                `SELECT name as deptName, id as deptID FROM department`); 
+                 console.log(deptRecs);
+                const newRole = await promptAddRole(deptRecs);
+                const role = await new Role(newRole.title,newRole.salary,newRole.dept,newRole.directReportee);
                 await role.addRole(promisePool);
-                console.log("bla 2");
+                
                 await init();
                 break;
             }catch(err)
