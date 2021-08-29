@@ -190,9 +190,8 @@ const userSelection = async(userRequest) =>{
                 console.log("It says view Employee Roles" + userRequest);
                 await main();
                 const role = await new Role();
-                await role.viewAllRoles(promisePool);
-                    
-                console.log("bla role");
+                await role.viewAllRoles(promisePool);    
+                
                 await init();
                 break;
             }
@@ -204,11 +203,11 @@ const userSelection = async(userRequest) =>{
         case "Add Role" : 
         {
             try{
-                console.log("It says add Employee Role" + userRequest);
+                
                 await main();
                 const [deptRecs,fields] = await promisePool.query(
                 `SELECT name as deptName, id as deptID FROM department`); 
-                 console.log(deptRecs);
+                 
                  const selectionAddRole = new selection; 
                 const newRole = await selectionAddRole.promptAddRole(deptRecs);
                 const role = await new Role(newRole.title,newRole.salary,newRole.dept,newRole.directReportee);
@@ -229,7 +228,7 @@ const userSelection = async(userRequest) =>{
                 await main();
                 const department = await new Department();
                 await department.viewDepartments(promisePool);
-                console.log("bla bls");
+                 
                 await init();
                 break;
             }
@@ -247,7 +246,7 @@ const userSelection = async(userRequest) =>{
                 const newDepartmentName = await selectionAddDept.promptAddDepartment();
                 const department = await new Department(newDepartmentName);
                 await department.AddDepartment(promisePool);
-                console.log("bla 2");
+                
                 await init();
                 break;
             }

@@ -1,34 +1,77 @@
-/*
-INSERT INTO department (name)
-VALUES ("Engineering"),
-       ("Finance");
+  use ets;
+  select count(*) from department; -- 0 records
+  select count(*) from role; -- 0 records
+  select count(*) from employee; -- 0 records
+
+  -- POPULATE DEPARTMENT TABLE
+  INSERT INTO DEPARTMENT(ID,NAME)
+  VALUES(1,'ENGINEERING');
+
+  INSERT INTO DEPARTMENT(ID,NAME)
+  VALUES(2,'SALES');
+
+  INSERT INTO DEPARTMENT(ID,NAME)
+  VALUES(3,'FINANCE');
+  
+  INSERT INTO DEPARTMENT(ID,NAME)
+  VALUES(4,'LEGAL');
 
 
-    INSERT INTO role (title,salary,department_id)
-VALUES ("Sales Lead","100000","2"),
-       ("Lead Engineer","80000","1");
 
-SELECT * FROM department;
-SELECT * FROM role;
+SELECT * FROM DEPARTMENT; -- 4 RECORDS
 
+  -- POPULATE ROLE TABLE
 
+ INSERT INTO ROLE(ID,TITLE,DEPARTMENT_ID,DIRECT_REPORTEE,SALARY)
+ VALUES(1,'Sales Lead',2,TRUE,100000);
 
-INSERT INTO employee (first_name,last_name,role_id,department_id,manager_id)
-VALUES ("Rajni","Dua","2","2","1"),
-("Lina","flynn","2","1",NULL);
-*/
-SELECT e.id,e.first_name,e.last_name,r.title role,d.name department, concat(m.first_name , " " ,  m.last_name) AS manager 
-            FROM employee e
-            LEFT OUTER JOIN
-             employee m 
-             ON e.manager_id = m.id
-            JOIN
-              role r
-              ON e.role_id = r.id
-              JOIN
-               department d
-            ON
-             e.department_id = d.id;
-            /*
-             join employee m
-             e.manager_id = m.id; */
+ INSERT INTO ROLE(ID,TITLE,DEPARTMENT_ID,DIRECT_REPORTEE,SALARY)
+ VALUES(2,'Sales Person',2,FALSE,80000);
+
+  INSERT INTO ROLE(ID,TITLE,DEPARTMENT_ID,DIRECT_REPORTEE,SALARY)
+ VALUES(3,'Lead Engineer',1,TRUE,150000);
+
+  INSERT INTO ROLE(ID,TITLE,DEPARTMENT_ID,DIRECT_REPORTEE,SALARY)
+ VALUES(4,'Software Engineer',1,FALSE,120000);
+
+  INSERT INTO ROLE(ID,TITLE,DEPARTMENT_ID,DIRECT_REPORTEE,SALARY)
+ VALUES(5,'Account Manager',3,TRUE,160000);
+
+  INSERT INTO ROLE(ID,TITLE,DEPARTMENT_ID,DIRECT_REPORTEE,SALARY)
+ VALUES(6,'Accountant',3,TRUE,125000);
+ 
+  INSERT INTO ROLE(ID,TITLE,DEPARTMENT_ID,DIRECT_REPORTEE,SALARY)
+ VALUES(7,'Legal Team Lead',4,TRUE,250000);
+ 
+  INSERT INTO ROLE(ID,TITLE,DEPARTMENT_ID,DIRECT_REPORTEE,SALARY)
+ VALUES(8,'Lawyer',4,FALSE,190000);
+ 
+ SELECT * FROM ROLE;
+
+-- POPULATE EMPLOYEE TABLE
+
+INSERT INTO EMPLOYEE(ID,FIRST_NAME,LAST_NAME,ROLE_ID,DEPARTMENT_ID,MANAGER_ID)
+VALUES(1,'John','Doe',1,2,null);
+
+INSERT INTO EMPLOYEE(ID,FIRST_NAME,LAST_NAME,ROLE_ID,DEPARTMENT_ID,MANAGER_ID)
+VALUES(2,'Mike','Chan',2,2,1);
+
+INSERT INTO EMPLOYEE(ID,FIRST_NAME,LAST_NAME,ROLE_ID,DEPARTMENT_ID,MANAGER_ID)
+VALUES(3,'Ashley','Rodriguez',3,1,null);
+
+INSERT INTO EMPLOYEE(ID,FIRST_NAME,LAST_NAME,ROLE_ID,DEPARTMENT_ID,MANAGER_ID)
+VALUES(4,'Kevin','Tupik',4,1,3);
+
+INSERT INTO EMPLOYEE(ID,FIRST_NAME,LAST_NAME,ROLE_ID,DEPARTMENT_ID,MANAGER_ID)
+VALUES(5,'Kunal','Singh',5,3,null);
+
+INSERT INTO EMPLOYEE(ID,FIRST_NAME,LAST_NAME,ROLE_ID,DEPARTMENT_ID,MANAGER_ID)
+VALUES(6,'Malia','Brown',6,3,5);
+
+INSERT INTO EMPLOYEE(ID,FIRST_NAME,LAST_NAME,ROLE_ID,DEPARTMENT_ID,MANAGER_ID)
+VALUES(7,'Sarah','Lourd',7,4,null);
+
+INSERT INTO EMPLOYEE(ID,FIRST_NAME,LAST_NAME,ROLE_ID,DEPARTMENT_ID,MANAGER_ID)
+VALUES(8,'Tom','Allen',8,4,7);
+
+SELECT * FROM EMPLOYEE;
