@@ -58,6 +58,7 @@ const promptUser = async() => {
                 "Add Department",
                 "View Employees By Manager",
                 "View Employees By Department",
+                "Total Utilized Budget For Department",
                 "EXIT"
             ]
         }
@@ -311,6 +312,37 @@ const userSelection = async(userRequest) =>{
         console.error(err);
     }
 }
+
+
+case "Total Utilized Budget For Department" : 
+    {
+    try{
+        await main();
+       const empDeptList = await new Department();
+       const usrDeptList = await empDeptList.getDepartmentList(promisePool);
+       console.table(usrDeptList);
+        const selectionDeptList = new selection;
+       const usrDeptSel = await selectionDeptList.promptDeptList(usrDeptList);
+       console.log("Selected department's Id is: " + usrDeptSel);  
+    
+       const totalBudgetByDeptRecs = await empDeptList.getTotalBudgetByDeptId(promisePool,usrDeptSel);
+       if (totalBudgetByDeptRecs.length != 0) {
+       console.table(totalBudgetByDeptRecs);
+       } else {console.log("No Budget found for the selected department");}
+
+      /* const empByMgrRecs = await empMgrList.getEmpByMgrId(promisePool,usrMgrSel);
+       console.log("Selected manager's Id is: " + usrMgrSel); 
+       console.log("The employees who report to this manager are : ")
+      console.table(empByMgrRecs); */
+
+       
+       await init();
+            break;
+    }catch(err){
+        console.error(err);
+    }
+}
+
 
         case "EXIT": {
             console.log("Exiting from application");
