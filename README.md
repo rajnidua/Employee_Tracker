@@ -1,5 +1,6 @@
-# Employee_Tracker
+# Employee_Tracker (EMPLOYEE TRACKING SYSTEM)
 A command-line application to manage a company's employee database. This application uses Node.js, Inquirer, and MySQL.
+Database Name in db : ets (EMPLOYEE TRACKING SYSTEM)
 
 
   ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
