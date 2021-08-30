@@ -41,11 +41,11 @@ return newEmployee;
            value: item.roleID
        }       
    });
-//console.log(roleList);
+ 
    const employeeRole =  await inquirer.prompt([
        {
        type: 'list',
-       message: 'The following roles exist in the department that this employee belongs to, please assign a role to the employee:',
+       message: 'What is the role?',
        name: 'empRole',
        choices: roleList
    }
@@ -77,10 +77,10 @@ return employeeRole.empRole;
 
  promptAddRole = async(deptArray) =>{
     //extracting department name and value
-    const deptList =  deptArray.map((item) => {
+    const departList =  deptArray.map((item) => {
         return {
-            name: item.deptName,
-            value: item.deptID
+            name: item.departmentName,
+            value: item.departmentId
         }       
     });
    //prompt the user for adding role
@@ -105,7 +105,7 @@ name: 'directReportee',
         type: 'list',
         message: 'Select the department where this employee belongs',
         name: 'dept',
-        choices: deptList
+        choices: departList
     }
     
 ]);
@@ -133,7 +133,7 @@ promptMgrList= async(usrMgrArr)=>{
             value: item.managerId
         }       
     });
-  //console.log(myEmpArray);
+ 
     const mgrSelected =  await inquirer.prompt([
     {
         type: 'list',
@@ -142,7 +142,7 @@ promptMgrList= async(usrMgrArr)=>{
         choices:   usrMgrLst
      }
  ]); 
- //console.log("user selection is :" + empSelected.empSel);
+  
  return mgrSelected.mgrSel;
 }
 
@@ -153,16 +153,16 @@ promptDeptList= async(usrDeptArr)=>{
             value: item.departmentId
         }       
     });
-  //console.log(myEmpArray);
+   
     const deptSelected =  await inquirer.prompt([
     {
         type: 'list',
-        message: 'Please select the Department record from the list below to view employee:',
+        message: 'Please select the Department record from the list below:',
         name: 'deptSel',
         choices:   usrDeptLst
      }
  ]); 
- //console.log("user selection is :" + empSelected.empSel);
+  
  return deptSelected.deptSel;
 }
 

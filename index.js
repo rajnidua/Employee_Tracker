@@ -51,11 +51,14 @@ const promptUser = async() => {
             name: 'request',
             choices: ["View All Employees",
               "Add Employee",
+              "Delete Employee",
               "Update Employee Role",
                "View All Roles",
                 "Add Role",
+                "Delete Role",
                 "View All Departments",
                 "Add Department",
+                "Delete Department",
                 "View Employees By Manager",
                 "View Employees By Department",
                 "Total Utilized Budget For Department",
@@ -97,34 +100,31 @@ const userSelection = async(userRequest) =>{
                 const Selection = new selection;
                 
                 const newEmployee = await Selection.promptNewEmployee(deptRow);
-                console.log("The value in new employee.department is :"+newEmployee.department);
+                
 
 
                 // get all the roles belonging to a department
                 const role = new Role();
                 const roleTitleRow = await role.getRolesByDept(promisePool,newEmployee.department);
-                //const roleTitleRow = await getRolesByDept(newEmployee.department);
-                console.table(roleTitleRow);
-                    console.log("The value of role title row is :"+roleTitleRow);
+             
+                
                 // selected role by the user
                 const selectionEmpRoles = new selection;
                 const rolesForDept = await selectionEmpRoles.promptEmployeeRoles(roleTitleRow); 
                 
-                console.log("******* "+rolesForDept);
+             
 
                  // get the employee list from department who have direct_reportee set to true based on their roles
                 const empGetManager = new Employee();
                  const managerRow = await empGetManager.getManagerDetails(promisePool,newEmployee.department);
-                console.log(managerRow);
+              
                 // select manager by the user
-                const manager = await promptEmployeeManager(managerRow);
-                console.log(manager.empMgr);
-
+                const manager = await selectionEmpRoles.promptMgrList(managerRow);
 
                 // add the new employee record
-                const emp =   new Employee(newEmployee.firstName,newEmployee.lastName,rolesForDept,newEmployee.department,manager.empMgr);
+                const emp =   new Employee(newEmployee.firstName,newEmployee.lastName,rolesForDept,newEmployee.department,manager);
                 await emp.addEmployee(promisePool);
-                console.log("Employee record added successfully");
+                 
                 await init();
                 break;
             }catch(err)
@@ -134,10 +134,51 @@ const userSelection = async(userRequest) =>{
            // break;
         }
 
+        
+
+        case "Delete Employee" : 
+        {
+            try{
+             
+               await main();
+                const [empRows,empFields] = await promisePool.query(
+                 `SELECT CONCAT (first_name ," ",last_name) as EmployeeName, id as EmployeeID FROM employee`); 
+                //`SELECT first_name ,last_name,id FROM employee`);
+                
+                 if (empRows.length == 0){console.log (
+                     "No Employee Records exist"); 
+                     return;}
+            
+                  // Prompt employee selection from user  (empSel) 
+                  const selectionEmp = new selection;
+                 const selEmployee = await selectionEmp.promptEmployeeList(empRows);
+                 
+                 // Check if employee exists as a manager
+                 const empBySel = new Employee;
+                      const mgrExist =   await empBySel.chkExistMgr(promisePool,selEmployee.empSel);
+                      console.log(mgrExist);
+                      if(mgrExist[0].recCount > 0) {
+                       console.log("Employee Record can not be deleted as it exists as a Manager");
+                       
+                      } else {
+                          // delete employee record
+                           
+                       await empBySel.deleteEmployeeRec(promisePool,selEmployee.empSel);   
+                      } 
+              
+               await init();
+               break;
+           }catch(err)
+           {
+               console.error("Error deleting the employee record:" + err);
+           } 
+          // break;
+       }
+
         case "Update Employee Role" : 
         {
             try{
-               console.log("It says update an employee Role " + userRequest);
+             
                await main();
                 const [empRow,empFields] = await promisePool.query(
                  `SELECT CONCAT (first_name ," ",last_name) as EmployeeName, id as EmployeeID FROM employee`); 
@@ -155,25 +196,21 @@ const userSelection = async(userRequest) =>{
                 // get employee detail by employee id selected by user
                 const empById = new Employee;
                 const empDet = await empById.getEmpById(promisePool,employeeList.empSel);
-                console.log("Employee details are" + empDet);
-                console.table(empDet);  
+   
                  const empDetails = Object.values(empDet);
-                console.log("curEmpDept" + empDetails[0].curEmpDept);
-               // get all the roles belonging to the selected employee department
-               const roleByDepartment = new Role;
-               const roleRecs = await roleByDepartment.getRolesByDept(empDetails[0].curEmpDept);
+           
+               // get all the roles  
+               const roleLst = new Role;
+               const roleRecords = await roleLst.getRoles(promisePool);
 
                // selected updated role by the user
                const selectionEmployeeRoles = new selection;
-               const rolesForDept = await selectionEmployeeRoles.promptEmployeeRoles(roleRecs); 
-               console.log("******* "+rolesForDept);
- 
+               const rolesForDept = await selectionEmployeeRoles.promptEmployeeRoles(roleRecords); 
             
-
                // add the new employee record
                const emp =   new Employee(empDetails[0].firstName,empDetails[0].lastName,rolesForDept,empDetails[0].curEmpDept,empDetails[0].curEmpMgrID);
-               await emp.updateEmployeeRole(promisePool,employeeList.empSel);
-               console.log("Employee record updated successfully");
+               await emp.updateEmployeeRole(promisePool,employeeList.empSel,rolesForDept);
+              
                await init();
                break;
            }catch(err)
@@ -187,11 +224,46 @@ const userSelection = async(userRequest) =>{
         case "View All Roles" : 
         {
             try{
-                console.log("It says view Employee Roles" + userRequest);
+                 
                 await main();
                 const role = await new Role();
                 await role.viewAllRoles(promisePool);    
                 
+                await init();
+                break;
+            }
+            catch(err){
+                console.error(err);
+            }
+        }
+
+
+        case "Delete Role" : 
+        {
+            try{
+               
+                await main();
+                const roleList = await new Role();
+                const roleData = await roleList.getRoles(promisePool);    
+
+                // selected  role by the user for deletion
+               const selectionRole = new selection;
+               const rolesForDept = await selectionRole.promptEmployeeRoles(roleData); 
+               
+               // check if any records exists
+               const empRole = new Employee;
+               const empRecExist =   await empRole.chkExistEmp(promisePool,rolesForDept);
+               console.log(empRecExist);
+               if(empRecExist[0].empRecCount > 0) {
+                console.log("Role Record can not be deleted as there are " + empRecExist[0].empRecCount + " employee record exists for this role" );
+                
+               } else {
+                   // delete role record
+                    
+                await roleList.deleteRoleRec(promisePool,rolesForDept);   
+               } 
+       
+
                 await init();
                 break;
             }
@@ -205,8 +277,10 @@ const userSelection = async(userRequest) =>{
             try{
                 
                 await main();
-                const [deptRecs,fields] = await promisePool.query(
-                `SELECT name as deptName, id as deptID FROM department`); 
+
+                const deptNew = new Department;
+                const deptRecs = await deptNew.getDepartmentList(promisePool);
+                
                  
                  const selectionAddRole = new selection; 
                 const newRole = await selectionAddRole.promptAddRole(deptRecs);
@@ -224,7 +298,7 @@ const userSelection = async(userRequest) =>{
         case "View All Departments" : 
         {
             try{
-                console.log("It says View All Departments" + userRequest);
+             
                 await main();
                 const department = await new Department();
                 await department.viewDepartments(promisePool);
@@ -239,7 +313,7 @@ const userSelection = async(userRequest) =>{
 
         case "Add Department" : 
         {
-            console.log("It says Add Department" + userRequest);
+             
             try{
                 await main();
                 const selectionAddDept = new selection;
@@ -256,6 +330,46 @@ const userSelection = async(userRequest) =>{
             }
         }
 
+
+
+        case "Delete Department" : 
+        {
+            try{
+               
+                await main();
+                const delDepartment = await new Department();
+                const deptData = await delDepartment.getDepartmentList(promisePool);    
+
+                // selected  role by the user for deletion
+               const selectDelDept = new selection;
+               const deptSelDel = await selectDelDept.promptDeptList(deptData); 
+               
+               // check if any records exists
+               const empDept = new Employee;
+               const empDeptRecExist =   await empDept.chkExistEmpDept(promisePool,deptSelDel);
+
+               const roleDept = new Role;
+               const roleDeptRecExist =   await roleDept.chkExistRoleDept(promisePool,deptSelDel);
+                
+               if((empDeptRecExist[0].empDeptRecCount > 0) || (roleDeptRecExist[0].roleDeptRecCount > 0)) {
+                console.log("Department Record can not be deleted as  employee or role record exists for this Department" );
+                
+               } else {
+                   // delete role record
+                    
+                await delDepartment.deleteDeptRec(promisePool,deptSelDel);   
+               } 
+       
+
+                await init();
+                break;
+            }
+            catch(err){
+                console.error(err);
+            }
+        }
+
+
         case "View Employees By Manager" : 
         {
         try{
@@ -267,7 +381,7 @@ const userSelection = async(userRequest) =>{
            
          
            const empByMgrRecs = await empMgrList.getEmpByMgrId(promisePool,usrMgrSel);
-           console.log("Selected manager's Id is: " + usrMgrSel); 
+            
            console.log("The employees who report to this manager are : ")
 
            if (empByMgrRecs.length != 0) {
@@ -289,22 +403,16 @@ const userSelection = async(userRequest) =>{
         await main();
        const empDeptList = await new Department();
        const usrDeptList = await empDeptList.getDepartmentList(promisePool);
-       console.table(usrDeptList);
+        
         const selectionDeptList = new selection;
        const usrDeptSel = await selectionDeptList.promptDeptList(usrDeptList);
-       console.log("Selected department's Id is: " + usrDeptSel);  
+          
     
        const empByDeptRecs = await empDeptList.getEmpByDeptId(promisePool,usrDeptSel);
        if (empByDeptRecs.length != 0) {
        console.table(empByDeptRecs);
        } else {console.log("No employee records found for the selected department");}
-
-      /* const empByMgrRecs = await empMgrList.getEmpByMgrId(promisePool,usrMgrSel);
-       console.log("Selected manager's Id is: " + usrMgrSel); 
-       console.log("The employees who report to this manager are : ")
-      console.table(empByMgrRecs); */
-
-       
+ 
        await init();
             break;
     }catch(err){
@@ -317,24 +425,22 @@ case "Total Utilized Budget For Department" :
     {
     try{
         await main();
+   
+      // Get Department List
        const empDeptList = await new Department();
        const usrDeptList = await empDeptList.getDepartmentList(promisePool);
-       console.table(usrDeptList);
+  
+        // Prompt User to select a department 
         const selectionDeptList = new selection;
        const usrDeptSel = await selectionDeptList.promptDeptList(usrDeptList);
-       console.log("Selected department's Id is: " + usrDeptSel);  
+     
     
        const totalBudgetByDeptRecs = await empDeptList.getTotalBudgetByDeptId(promisePool,usrDeptSel);
        if (totalBudgetByDeptRecs.length != 0) {
        console.table(totalBudgetByDeptRecs);
        } else {console.log("No Budget found for the selected department");}
 
-      /* const empByMgrRecs = await empMgrList.getEmpByMgrId(promisePool,usrMgrSel);
-       console.log("Selected manager's Id is: " + usrMgrSel); 
-       console.log("The employees who report to this manager are : ")
-      console.table(empByMgrRecs); */
-
-       
+ 
        await init();
             break;
     }catch(err){
