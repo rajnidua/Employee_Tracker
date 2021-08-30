@@ -20,7 +20,7 @@ CREATE TABLE role (
   REFERENCES department(id)
   ON DELETE SET NULL,
   direct_reportee BOOLEAN DEFAULT FALSE
-  CONSTRAINT UC_Title UNIQUE(title,department_id)
+
 );
 
 DROP TABLE IF EXISTS employee;

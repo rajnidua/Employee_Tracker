@@ -75,3 +75,7 @@ INSERT INTO EMPLOYEE(ID,FIRST_NAME,LAST_NAME,ROLE_ID,DEPARTMENT_ID,MANAGER_ID)
 VALUES(8,'Tom','Allen',8,4,7);
 
 SELECT * FROM EMPLOYEE;
+
+select count(*) from department; 
+select count(*) from role;
+select count(*) from employee; 
