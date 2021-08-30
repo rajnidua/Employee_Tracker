@@ -7,16 +7,18 @@ A command-line application to manage a company's employee database. This applica
  
   ## Table of contents
   - [Description](#Description)
-  - [Video]<a name="#video">Video</a>
-  - [Screenshots](#Screenshot)
-  - [Installation](#Installation)
+  - [Video Link](#VideoLink)
+  - [Screenshots](#Screenshots)
+  - [Installation](#Installations)
   - [Usage](#Usage)
   - [Testing](#Testing)
   - [Contributing](#Contributing)
   - [Questions](#Questions)
   - [License](#License)
+  
 
   ## Description
+  ```md
 GIVEN a command-line application that accepts user input
 WHEN I start the application
 THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role,View Employees By Manager,View Employees By Department,Total Utilized Budget For Department,EXIT
@@ -47,26 +49,22 @@ Then I am prompted to choose from the list of departments and I am presented wit
 WHEN I choose Total Utilized Budget For Department,
 Then I am prompted to choose from the list of department and I am presented with the total utilized budget for that department.
 ```
-
-#video
-  https://drive.google.com/file/d/1VRQItqhyZRh1uOjKFSmvSQDrdDptLVy6/view?usp=sharing
-
-
-## Screenshot
-
-[![screenshot1](/assets/Employee_Tracking_System_1.png)]
-[![screenshot2](/assets/Employee_Tracking_System_2.png)]
-
-
-
-## Installation
+## Prompts Available to User
   ```md
-    node js
-  npm install
-  npm install Mysql2
-  npm install dotenv
-  npm install console.table --save
-  npm install inquirer
+"View All Employees",
+"Add Employee",
+"Delete Employee",
+"Update Employee Role",
+"View All Roles",
+"Add Role",
+"Delete Role",
+"View All Departments",
+"Add Department",
+"Delete Department",
+"View Employees By Manager",
+"View Employees By Department",
+"Total Utilized Budget For Department",
+"EXIT"
   ```
 
   ## Usage
@@ -77,7 +75,25 @@ Then I am prompted to choose from the list of department and I am presented with
   Create data using 'SOURCE seeds.sql'
   Come out of sql, go to the root folder and type 'node index'
 
-  
+
+## VideoLink
+  https://drive.google.com/file/d/1VRQItqhyZRh1uOjKFSmvSQDrdDptLVy6/view?usp=sharing 
+
+
+## Screenshots
+  [![screenshot1](/assets/Employee_Tracking_System_1.png)]
+[![screenshot2](/assets/Employee_Tracking_System_2.png)] 
+
+## Installations
+  ```md
+    node js
+  npm install
+  npm install Mysql2
+  npm install dotenv
+  npm install console.table --save
+  npm install inquirer
+  ``` 
+
   ## Testing
   Use the different options in the prompts and check the result data. 
 
