@@ -7,7 +7,7 @@ A command-line application to manage a company's employee database. This applica
  
   ## Table of contents
   - [Description](#Description)
-  - [Video](#Video)
+  - [Video]<a name="#video">Video</a>
   - [Screenshots](#Screenshot)
   - [Installation](#Installation)
   - [Usage](#Usage)
@@ -48,15 +48,15 @@ WHEN I choose Total Utilized Budget For Department,
 Then I am prompted to choose from the list of department and I am presented with the total utilized budget for that department.
 ```
 
-## Video
-
+#video
+  https://drive.google.com/file/d/1VRQItqhyZRh1uOjKFSmvSQDrdDptLVy6/view?usp=sharing
 
 
 ## Screenshot
 
-[![screenshot1]()]
+[![screenshot1](/assets/Employee_Tracking_System_1.png)]
+[![screenshot2](/assets/Employee_Tracking_System_2.png)]
 
-[![screenshot2]()]
 
 
 ## Installation
