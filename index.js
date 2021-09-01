@@ -469,7 +469,7 @@ const processUserRequest = async(userRequest) => {
 }
 
 
-/* const show = async() => new Promise((resolve, reject) => {
+ const show = () => new Promise((resolve, reject) => {
     figlet('Employee Tracking System', (err, data) => {
      if (err) {
       return reject(err);
@@ -477,17 +477,9 @@ const processUserRequest = async(userRequest) => {
    
      return resolve(console.log(data));
     });
-   }) */
-/* const myFunction=async()=>{
-    promptUser()
-      .then((userRequest) =>
-         processUserRequest(userRequest)
-      ) 
-      .catch((error)=>{console.log(error)});
-} */
+   }) 
 
-
-const init = async() => {
+const init = () => {
     
      promptUser()
       .then((userRequest) =>
@@ -497,5 +489,5 @@ const init = async() => {
   }
   
 
-
-init();
+ show()
+.then(()=>init());
