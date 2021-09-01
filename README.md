@@ -78,7 +78,7 @@ Then I am prompted to choose from the list of department and I am presented with
 
 
 ## VideoLink
-  ![Walkthrough of the application link Video](https://drive.google.com/file/d/14zGVOiTEuxwe6KwTaHE8a6QNt5u8dFr9/view?usp=sharing)
+  https://drive.google.com/file/d/14zGVOiTEuxwe6KwTaHE8a6QNt5u8dFr9/view?usp=sharing
 
 
 ## Screenshots
