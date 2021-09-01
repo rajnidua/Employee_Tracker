@@ -78,12 +78,12 @@ Then I am prompted to choose from the list of department and I am presented with
 
 
 ## VideoLink
-  https://drive.google.com/file/d/1VRQItqhyZRh1uOjKFSmvSQDrdDptLVy6/view?usp=sharing 
+  ![Walkthrough of the application link Video](https://drive.google.com/file/d/14zGVOiTEuxwe6KwTaHE8a6QNt5u8dFr9/view?usp=sharing)
 
 
 ## Screenshots
-  [![screenshot1](/assets/Employee_Tracking_System_1.png)]
-[![screenshot2](/assets/Employee_Tracking_System_2.png)] 
+  [![screenshot1](/assets/EmployeeTrackingSystem1.png)]
+[![screenshot2](/assets/EmployeeTrackingSystem2.png)] 
 
 ## Installations
   ```md
